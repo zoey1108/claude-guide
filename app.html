@@ -43,6 +43,7 @@ code{font-family:var(--f-mono);font-size:.86em;background:var(--sunk);border:1px
 strong{font-weight:700}
 
 .app{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 112px}
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--paper);z-index:6}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 12px;border-bottom:1px solid var(--line);margin-bottom:20px}
 .brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:800;font-size:19px;letter-spacing:.02em;background:none;border:0;padding:0}
 .brand-mark{width:30px;height:30px;border-radius:9px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink)}
