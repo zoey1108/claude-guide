@@ -1,0 +1,684 @@
+<title>Claude 学堂</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;800&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 布局：单栏移动优先的学习 App，底部五个标签；玉绿做主色，琥珀只用于进度与高亮 */
+:root{
+  --paper:#F1F4F2; --surface:#FFFFFF; --sunk:#E6ECE9;
+  --ink:#16201D; --muted:#5A6863; --line:#D6DED9;
+  --accent:#1D6A5B; --accent-ink:#FFFFFF; --accent-soft:#DAEBE5;
+  --signal:#B9761A; --signal-soft:#F6E8D2;
+  --bad:#A9443A; --bad-soft:#F5E1DE; --good:#2D7A4E; --good-soft:#DDEFE3;
+  --code-bg:#1B2522; --code-fg:#E3ECE8;
+  --f-display:"Noto Serif SC","Songti SC","STSong",serif;
+  --f-body:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0F1513; --surface:#17201D; --sunk:#111A17;
+  --ink:#E4ECE8; --muted:#93A39D; --line:#28342F;
+  --accent:#62BCA6; --accent-ink:#08201A; --accent-soft:#1B3530;
+  --signal:#E3AA4E; --signal-soft:#3A2D17;
+  --bad:#E3816F; --bad-soft:#3A201C; --good:#71C493; --good-soft:#1A3324;
+  --code-bg:#0A100E; --code-fg:#D8E4DF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0F1513; --surface:#17201D; --sunk:#111A17;
+  --ink:#E4ECE8; --muted:#93A39D; --line:#28342F;
+  --accent:#62BCA6; --accent-ink:#08201A; --accent-soft:#1B3530;
+  --signal:#E3AA4E; --signal-soft:#3A2D17;
+  --bad:#E3816F; --bad-soft:#3A201C; --good:#71C493; --good-soft:#1A3324;
+  --code-bg:#0A100E; --code-fg:#D8E4DF; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{background:var(--paper)}
+body{color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.3}
+p{margin:0}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--sunk);border:1px solid var(--line);padding:.05em .4em;border-radius:5px;word-break:break-word}
+strong{font-weight:700}
+
+.app{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 112px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 12px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:800;font-size:19px;letter-spacing:.02em;background:none;border:0;padding:0}
+.brand-mark{width:30px;height:30px;border-radius:9px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink)}
+.pill{font-size:13px;font-variant-numeric:tabular-nums;padding:4px 12px;border-radius:99px;background:var(--signal-soft);color:var(--signal);font-weight:700;white-space:nowrap}
+.back{display:inline-flex;align-items:center;gap:6px;background:none;border:0;color:var(--muted);font-size:14px;padding:4px 0}
+
+/* 底部导航 */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs-in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tab{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 8px;font-size:12px;color:var(--muted)}
+.tab svg{width:22px;height:22px}
+.tab[aria-current="page"]{color:var(--accent);font-weight:700}
+
+/* 通用 */
+.stack{display:flex;flex-direction:column;gap:14px}
+.section{display:flex;flex-direction:column;gap:12px;margin-top:32px}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:700}
+.h-sec{font-size:20px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:11px;padding:11px 18px;font-weight:700;font-size:15px;border:1px solid transparent;background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.sm{padding:6px 12px;font-size:13px;border-radius:9px}
+.btn:active{transform:translateY(1px)}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 14px;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.star{background:none;border:0;padding:6px;color:var(--muted);line-height:0}
+.star[aria-pressed="true"]{color:var(--signal)}
+.star svg{width:20px;height:20px}
+
+/* 首页 */
+.hero{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;padding-block:8px 4px}
+.hero h1{font-size:clamp(28px,7vw,40px);font-weight:800;letter-spacing:.01em}
+.hero p{margin-top:8px;color:var(--muted);max-width:30em}
+.ring{width:108px;height:108px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-num{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-variant-numeric:tabular-nums;line-height:1.1}
+.ring-num b{font-family:var(--f-display);font-size:26px}
+.ring-num span{font-size:12px;color:var(--muted)}
+.continue{display:flex;gap:16px;align-items:center;background:var(--accent);color:var(--accent-ink);border-radius:18px;padding:18px 20px;border:0;text-align:left;width:100%}
+.continue .grow p{opacity:.85;font-size:13px}
+.continue h3{font-size:19px;margin-top:2px}
+.go{width:40px;height:40px;border-radius:50%;background:var(--accent-ink);color:var(--accent);display:grid;place-items:center;flex:none}
+.paths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.path{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;text-align:left;display:flex;flex-direction:column;gap:6px;min-width:0}
+.path b{font-family:var(--f-display);font-size:16px}
+.path span{font-size:13px;color:var(--muted);line-height:1.5}
+.bar{height:5px;border-radius:99px;background:var(--sunk);overflow:hidden;margin-top:auto}
+.bar i{display:block;height:100%;background:var(--signal);border-radius:99px}
+.tip-card{border:1px dashed var(--line);border-radius:var(--r);padding:16px 18px;background:var(--surface)}
+.tip-card .eyebrow{color:var(--signal)}
+
+/* 课程 */
+.mod{display:flex;flex-direction:column;gap:2px}
+.mod-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-block:6px 10px}
+.mod-head h2{font-size:21px}
+.mod-head span{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lessons{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.lesson-row{display:flex;align-items:center;gap:14px;width:100%;background:none;border:0;border-top:1px solid var(--line);padding:14px 16px;text-align:left}
+.lesson-row:first-child{border-top:0}
+.lesson-row .num{width:28px;height:28px;flex:none;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700}
+.lesson-row.done .num{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.lesson-row .t{font-weight:500}
+.lesson-row .m{font-size:13px;color:var(--muted)}
+.lesson-row svg.chev{width:18px;height:18px;color:var(--muted);flex:none}
+
+/* 课文 */
+.lesson-head{display:flex;flex-direction:column;gap:10px;padding-block:6px 4px}
+.lesson-head h1{font-size:clamp(26px,6.5vw,34px)}
+.prose{display:flex;flex-direction:column;gap:16px;margin-top:22px;max-width:40em}
+.prose h3{font-size:19px;margin-top:10px}
+.prose ul,.prose ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px}
+.prose li::marker{color:var(--accent);font-weight:700}
+.callout{border-radius:12px;padding:14px 16px;background:var(--signal-soft);font-size:15px}
+.callout b{color:var(--signal);margin-right:6px}
+.cmp{display:flex;flex-direction:column;gap:10px}
+.bubble{border-radius:16px 16px 16px 4px;padding:14px 16px;border:1px solid var(--line);background:var(--surface);white-space:pre-wrap;min-width:0}
+.bubble .lab{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;padding:1px 9px;border-radius:99px;margin-bottom:6px}
+.bubble.bad .lab{background:var(--bad-soft);color:var(--bad)}
+.bubble.good{border-color:var(--accent)}
+.bubble.good .lab{background:var(--good-soft);color:var(--good)}
+.cmp-note{font-size:14px;color:var(--muted)}
+.try{border:1.5px solid var(--accent);border-radius:var(--r);overflow:hidden}
+.try-head{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--accent-soft);padding:8px 10px 8px 16px;font-size:13px;font-weight:700;color:var(--accent)}
+.try-body{padding:14px 16px;white-space:pre-wrap;background:var(--surface)}
+.code{border-radius:12px;background:var(--code-bg);color:var(--code-fg);overflow:hidden}
+.code-head{display:flex;justify-content:space-between;align-items:center;padding:6px 8px 6px 14px;font-size:12px;font-family:var(--f-mono);opacity:.85}
+.code-head .btn{background:transparent;border-color:rgba(255,255,255,.18);color:var(--code-fg)}
+.code pre{margin:0;padding:4px 16px 16px;overflow-x:auto;font-family:var(--f-mono);font-size:13.5px;line-height:1.65}
+.quiz{margin-top:30px;display:flex;flex-direction:column;gap:12px}
+.quiz .q{font-weight:700;font-size:17px}
+.opt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px}
+.opt .k{width:26px;height:26px;flex:none;border-radius:8px;background:var(--sunk);display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--muted)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.right .k{background:var(--good);color:var(--surface)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad);color:var(--surface)}
+.opt:disabled{cursor:default;color:var(--ink)}
+.why{font-size:15px;padding:12px 14px;border-radius:12px;background:var(--sunk)}
+.lesson-foot{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap}
+.lesson-foot .btn{flex:1 1 160px}
+
+/* 提示词 */
+.pr-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pr{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;text-align:left;display:flex;flex-direction:column;gap:4px;min-width:0}
+.pr .cat{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.06em}
+.pr b{font-size:16px}
+.pr span{font-size:13px;color:var(--muted);line-height:1.55}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:14px;font-weight:700}
+.field input,.field textarea{width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;font-size:15px;line-height:1.6}
+.field textarea{min-height:76px;resize:vertical}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+.preview{white-space:pre-wrap;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;font-size:15px}
+.preview mark{background:var(--signal-soft);color:var(--signal);border-radius:4px;padding:0 3px;font-weight:700}
+
+/* 速查 */
+.search{width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px 12px 42px;font-size:16px;background-image:none}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
+.cheat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.cheat-row{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr);gap:14px;padding:11px 16px;border-top:1px solid var(--line);align-items:baseline}
+.cheat-row:first-child{border-top:0}
+.cheat-row kbd,.cheat-row .cmd{font-family:var(--f-mono);font-size:13.5px;font-weight:600;color:var(--accent);word-break:break-word}
+.cheat-row span{font-size:14.5px}
+.empty{text-align:center;color:var(--muted);padding:32px 12px}
+
+/* 我的 */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--f-display);font-size:28px;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat span{font-size:13px;color:var(--muted)}
+.mod-prog{display:grid;grid-template-columns:minmax(0,1fr) 120px 44px;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+.mod-prog:first-child{border-top:0}
+.mod-prog em{font-style:normal;font-size:13px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.confirm{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-radius:12px;background:var(--bad-soft);color:var(--bad);font-size:14px}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(12px);background:var(--ink);color:var(--paper);padding:9px 18px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;white-space:nowrap}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.view{animation:in .25s ease-out}
+@keyframes in{from{transform:translateY(6px)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.view{animation:none}.toast{transition:none}}
+
+@media (max-width:560px){
+  .paths{grid-template-columns:1fr}
+  .pr-list{grid-template-columns:1fr}
+  .hero{grid-template-columns:1fr auto}
+  .ring{width:88px;height:88px}
+  .ring-num b{font-size:22px}
+  .cheat-row{grid-template-columns:1fr;gap:2px}
+  .mod-prog{grid-template-columns:minmax(0,1fr) 80px 40px}
+}
+</style>
+
+<div class="app">
+  <header class="top">
+    <button class="brand" id="brand" aria-label="回到首页">
+      <span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></svg></span>
+      Claude 学堂
+    </button>
+    <span class="pill" id="topPill"></span>
+  </header>
+  <main id="view" class="view"></main>
+</div>
+
+<nav class="tabs" aria-label="主导航"><div class="tabs-in" id="tabs"></div></nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ========== 课程内容 ========== */
+const MODULES = [
+ {id:'m1', name:'认识 Claude', path:'新手入门', lessons:[
+  {id:'l1', title:'Claude 是什么', mins:3, blocks:[
+   ['p','Claude 是 Anthropic 公司开发的 AI 助手。它能读写长文、分析文件和图片、写代码、查资料，也能在你的电脑上直接动手做事。'],
+   ['h','模型家族'],
+   ['p','Claude 有几档模型，越强的越聪明，越轻的越快越省。'],
+   ['ul',['**Fable 5.1**：目前最强，适合最难的推理、长时间任务和复杂代码。','**Opus 5.5**：深度能力强，适合复杂写作、分析和规划。','**Sonnet 5.5**：速度和能力均衡，适合做日常主力。','**Haiku 4.5**：最快最省，适合简单问答和大批量处理。']],
+   ['tip','不确定选哪个时，先用 Sonnet。遇到它答不好的难题，再换更强的模型。'],
+   ['h','它不擅长什么'],
+   ['ul',['知识有截止时间，最新消息要打开联网搜索。','可能出错。关键数字、法律和医疗结论要自己核实。','默认不记得别的对话。想让它记住，用「项目」或打开记忆功能。']]
+  ], quiz:{q:'日常写邮件、整理笔记，速度和能力最均衡的是哪个？', opts:['Haiku 4.5','Sonnet 5.5','Fable 5.1'], a:1, why:'Sonnet 是均衡型。Haiku 更快但能力弱一些，Fable 最强但更适合真正困难的任务。'}},
+  {id:'l2', title:'在哪里使用', mins:3, blocks:[
+   ['p','同一个账号可以在很多地方用 Claude，对话记录会在网页、桌面和手机之间同步。'],
+   ['ul',['**网页**：打开 `claude.ai` 就能用。','**桌面 App**：Mac 和 Windows 都有，可以用快捷键随时唤出，还能帮你操作电脑。','**手机 App**：iOS 和 Android 都有，支持语音对话和拍照提问。','**Claude Code**：会写代码的 Claude，能在终端、桌面 App、VS Code、JetBrains 和网页里用。','**Claude in Chrome**：浏览器扩展，帮你在网页上点击、填表、整理信息。','**API**：开发者把 Claude 接进自己的产品。']],
+   ['tip','手机上遇到看不懂的东西，直接拍照发给 Claude，比打字描述快得多。']
+  ], quiz:{q:'想让 Claude 直接修改你电脑上项目里的代码，该用哪个？', opts:['手机 App','Claude Code','网页上的联网搜索'], a:1, why:'Claude Code 能读懂整个项目，直接修改文件、运行命令和测试。'}},
+  {id:'l3', title:'第一次对话', mins:4, blocks:[
+   ['ol',['打开 `claude.ai`，注册并登录。','点「新对话」，在输入框写下你的问题。','需要时用回形针按钮上传文件或截图。','在输入框附近切换模型。','对回答不满意，直接说哪里不对，让它改。']],
+   ['h','同样的需求，两种问法'],
+   ['cmp','帮我写个自我介绍','帮我写一段 1 分钟的面试自我介绍。我应聘互联网公司的增长运营岗，有 3 年电商运营经验，做过日活从 2 万涨到 10 万的项目。语气自然，不要太书面。','好的问法交代了场景、身份、亮点和语气，Claude 不用猜。'],
+   ['try','帮我写一段 1 分钟的面试自我介绍。我应聘的是＿＿岗位，有＿＿年＿＿经验，最拿得出手的成绩是＿＿。语气自然，不要太书面。']
+  ], quiz:{q:'回答不满意时，最有效的做法是？', opts:['新开一个对话，问一模一样的问题','具体指出哪里不对，让它修改','换一个模型重新问'], a:1, why:'具体的反馈让 Claude 知道往哪个方向改。重复同样的问题，大概率得到差不多的结果。'}}
+ ]},
+ {id:'m2', name:'提问的艺术', path:'新手入门', lessons:[
+  {id:'l4', title:'把话说清楚', mins:4, blocks:[
+   ['p','Claude 很聪明，但不知道你脑子里的背景。把它当成一位能力很强、刚入职的同事：你交代得越清楚，结果越好。'],
+   ['h','好提示词的四个要素'],
+   ['ul',['**背景**：这是什么事，为什么要做。','**任务**：具体要它产出什么。','**要求**：长度、语气、受众，必须包含或避免的内容。','**格式**：列表、表格、段落，还是某种固定模板。']],
+   ['cmp','总结一下这篇文章','下面是一篇行业报告。请帮我给老板写一段 200 字以内的总结，重点说清楚对我们电商业务有什么影响，最后给出 2 条可以马上执行的建议。','后一种写清了读者是谁、篇幅多长、重点是什么、结尾要什么。'],
+   ['tip','说「要做什么」比说「不要做什么」更有效。与其说「别写太长」，不如说「控制在 3 句话以内」。']
+  ], quiz:{q:'下面哪一项不属于好提示词的四要素？', opts:['背景','任务','客套话','格式'], a:2, why:'礼貌没坏处，但真正影响结果的是背景、任务、要求和格式。'}},
+  {id:'l5', title:'给它看例子', mins:3, blocks:[
+   ['p','想要某种特定风格时，与其堆形容词，不如直接给 1 到 3 个例子。Claude 会照着例子的感觉来写。'],
+   ['cmp','帮我写几个有吸引力的商品标题','参考下面的风格，为「便携咖啡杯」写 5 个商品标题：\n例 1：一杯在手，通勤不慌｜316 不锈钢保温 6 小时\n例 2：办公室续命神器｜一键开盖，单手就能喝','「有吸引力」每个人理解都不一样，例子能把标准说死。'],
+   ['tip','例子之间要有差异，不然 Claude 会照抄句式。如果只想学风格、不想学内容，明确说一声。']
+  ], quiz:{q:'给 Claude 示例时，最需要注意什么？', opts:['例子越多越好','例子之间要有差异','例子要和想要的结果一模一样'], a:1, why:'例子太像，Claude 会机械模仿句式；有变化的例子才能让它抓到共同的风格。'}},
+  {id:'l6', title:'让它先想再答', mins:3, blocks:[
+   ['p','遇到复杂问题，比如多步计算、方案比较、策略分析，让 Claude 先思考再给结论，准确率会明显提高。'],
+   ['ul',['在 claude.ai 打开「扩展思考」（Extended thinking），它会先推理再回答。','也可以在提问里写：「请一步步分析，最后再给结论」。','让它列出考虑过的方案和取舍，你更容易判断它对不对。']],
+   ['try','我在考虑两个方案做小程序：A 是自建团队，B 是外包。预算 20 万，3 个月要上线。请先列出需要考虑的因素，逐项比较两个方案，最后给出推荐和理由。']
+  ], quiz:{q:'哪类问题最值得让 Claude「先想再答」？', opts:['把一句话翻译成英文','比较三个融资方案的利弊','给猫起个名字'], a:1, why:'多因素比较需要推理过程。简单任务直接回答就行，开思考反而更慢。'}},
+  {id:'l7', title:'用标签整理长内容', mins:3, blocks:[
+   ['p','一次给好几份材料时，用标签把它们分开，Claude 就能准确知道哪段是什么。标签名可以用中文。'],
+   ['code','text','请对比下面两份报价，指出价格和服务条款的差异。\n\n<报价A>\n（粘贴第一份）\n</报价A>\n\n<报价B>\n（粘贴第二份）\n</报价B>\n\n请用表格输出，最后一行写你的建议。'],
+   ['tip','长文档放在前面，问题放在最后，效果通常更好。']
+  ], quiz:{q:'给 Claude 一份很长的合同并提问，问题放在哪里效果通常更好？', opts:['放在合同前面','放在合同后面','放哪都一样'], a:1, why:'先给材料、最后提问，Claude 读完全文再看到问题，回答更聚焦。'}},
+  {id:'l8', title:'多轮迭代', mins:3, blocks:[
+   ['p','第一版很少完美。把对话当成合作：先要一版，再一步步收紧。'],
+   ['ul',['指出具体问题：「第二段太空了，加一个真实案例。」','给出方向：「语气再口语一点，像跟朋友聊天。」','让它自查：「检查一下有没有事实错误或前后矛盾。」','对话太长、开始跑偏时，新开一个对话，把关键结论贴过去。']],
+   ['tip','发现上一条问得不好，可以直接编辑那条消息重新生成，比不停追加纠正更干净。']
+  ], quiz:{q:'对话越来越长、回答开始跑偏，最好怎么办？', opts:['继续追问，直到它改对','新开对话，带上关键结论','把所有要求再重复一遍'], a:1, why:'过长的对话里早期信息容易被稀释。新对话加上精炼的背景，往往立刻回到正轨。'}}
+ ]},
+ {id:'m3', name:'核心功能', path:'效率进阶', lessons:[
+  {id:'l9', title:'项目 Projects', mins:4, blocks:[
+   ['p','项目是一个专属工作区。你上传资料、写一份固定说明，之后在这个项目里开的每个对话都会自动带上它们。'],
+   ['h','适合用在'],
+   ['ul',['公司产品资料和品牌规范，写文案时不用每次重贴。','一门课的讲义，让 Claude 当你的私人助教。','长期写作项目，保持风格和设定前后一致。']],
+   ['h','怎么建'],
+   ['ol',['在左侧栏进入 Projects，新建项目。','在项目知识里上传文件。','在项目说明里写固定要求，比如「用简体中文回答，面向小红书用户，语气活泼」。','在项目里新建对话，开始使用。']]
+  ], quiz:{q:'每次写文案都要重新粘贴品牌规范，最省事的办法是？', opts:['把规范存在记事本里每次复制','建一个项目，把规范放进项目知识','让 Claude 记在当前对话里'], a:1, why:'项目里的资料和说明会自动带进每个新对话。'}},
+  {id:'l10', title:'Artifacts 作品', mins:4, blocks:[
+   ['p','让 Claude 写网页、小工具、图表或长文档时，它会把结果放在对话旁边的独立窗口里。你可以直接预览、继续修改，还能生成链接分享给别人。'],
+   ['ul',['小工具：番茄钟、记账表、抽签器。','可视化：把一份表格变成图表或看板。','文档：方案、清单、学习笔记。','小游戏：拿来玩，也能拿来教孩子。']],
+   ['try','帮我做一个番茄钟网页：25 分钟专注、5 分钟休息，有开始、暂停和重置按钮，显示今天完成了几轮。界面简洁，手机上也好用。'],
+   ['tip','想改哪里直接说，比如「按钮换成绿色」「加一个提示音」。不用自己懂代码。']
+  ], quiz:{q:'关于 Artifacts，下面哪句是对的？', opts:['只能生成纯文字','可以预览、修改并分享链接','必须自己会写代码才能用'], a:1, why:'Artifacts 能生成可交互的页面和工具，用自然语言就能修改。'}},
+  {id:'l11', title:'读文件和图片', mins:3, blocks:[
+   ['p','PDF、Word、Excel、CSV、代码文件和图片都可以直接上传。'],
+   ['ul',['长合同：「列出对我方不利的条款，标注页码。」','销售表：「按月份汇总销售额，找出下滑最多的品类，画个图。」','报错截图：「这个报错是什么意思，怎么解决？」','白板照片：「把这张照片整理成会议纪要。」']],
+   ['tip','涉及数字的分析，让它说明计算方法，方便你核对。']
+  ], quiz:{q:'让 Claude 分析销售数据时，怎样更容易发现错误？', opts:['只要最终结论','要求它说明计算方法','让它回答得越短越好'], a:1, why:'看到计算过程，你才能检查口径和公式是不是对的。'}},
+  {id:'l12', title:'联网搜索与深度研究', mins:3, blocks:[
+   ['p','Claude 的知识有截止时间。打开联网搜索后，它能查最新信息并附上来源链接。'],
+   ['p','研究（Research）模式会花几分钟查阅大量资料，交给你一份带引用的报告，适合行业调研、竞品分析、选购对比。'],
+   ['try','帮我调研国内主流的 AI 笔记类 App，比较它们的核心功能、价格和目标用户，用表格呈现，并附上信息来源。'],
+   ['tip','来源链接要点开看看，确认原文确实是那个意思。']
+  ], quiz:{q:'问「今天某只股票的收盘价」，需要什么？', opts:['扩展思考','联网搜索','上传 Excel'], a:1, why:'实时信息不在模型的知识里，必须联网查。'}},
+  {id:'l13', title:'连接器与记忆', mins:3, blocks:[
+   ['p','**连接器**让 Claude 读取你授权的应用，比如 Gmail、Google 日历、Google Drive、Notion。它背后用的是开放的 MCP 协议。'],
+   ['p','**记忆**打开后，Claude 会记住你的偏好和长期背景，下次不用重复介绍自己。你可以随时查看和删除它记住的内容。'],
+   ['try','看一下我明天的日程，帮我找出两个可以约 30 分钟会议的空档。'],
+   ['tip','只连接真正需要的应用，授权前看清它能读写哪些内容。']
+  ], quiz:{q:'连接器背后使用的开放协议叫什么？', opts:['MCP','HTTP','SQL'], a:0, why:'MCP（Model Context Protocol）是让 AI 接入外部工具和数据的开放标准。'}}
+ ]},
+ {id:'m4', name:'Claude Code', path:'开发者', lessons:[
+  {id:'l14', title:'安装与启动', mins:4, blocks:[
+   ['p','Claude Code 是会写代码的 Claude。它能读懂整个项目、修改文件、运行命令、跑测试、提交代码。'],
+   ['h','安装'],
+   ['code','bash','# macOS / Linux\ncurl -fsSL https://claude.ai/install.sh | bash\n\n# Windows（PowerShell）\nirm https://claude.ai/install.ps1 | iex\n\n# 或者用 npm\nnpm install -g @anthropic-ai/claude-code'],
+   ['h','启动'],
+   ['code','bash','cd 你的项目目录\nclaude'],
+   ['p','第一次运行会让你登录 Claude 账号（Pro、Max、Team 或企业版），也可以用 API Key。不想碰终端的话，Claude 桌面 App 的 Code 标签页里也能用。'],
+   ['try','这个项目是做什么的？主要目录结构是怎样的？我应该先看哪几个文件？']
+  ], quiz:{q:'在项目目录里启动 Claude Code 的命令是？', opts:['claude','code','anthropic start'], a:0, why:'进入项目目录后输入 claude 即可启动。'}},
+  {id:'l15', title:'CLAUDE.md 项目说明书', mins:4, blocks:[
+   ['p','`CLAUDE.md` 是放在项目根目录的一份说明，Claude Code 每次启动都会自动读取。写上项目约定，它就不用每次问你。'],
+   ['code','markdown','# 项目说明\n- 技术栈：Next.js + TypeScript + Tailwind\n- 启动：npm run dev，端口 3000\n- 测试：npm test，提交前必须通过\n- 组件用函数式写法\n- 界面文案统一用简体中文'],
+   ['ul',['输入 `/init`，让 Claude 扫描项目自动生成初稿。','`~/.claude/CLAUDE.md` 放你的全局偏好，对所有项目生效。','保持简短，只写 Claude 自己看代码看不出来的东西。']]
+  ], quiz:{q:'想让 Claude 自动生成 CLAUDE.md 初稿，用哪个命令？', opts:['/init','/clear','/model'], a:0, why:'/init 会分析项目结构并生成一份 CLAUDE.md。'}},
+  {id:'l16', title:'常用命令与快捷键', mins:4, blocks:[
+   ['p','下面这些用得最多，完整列表在「速查」页。'],
+   ['ul',['`@文件名`：把某个文件交给 Claude 看，比如「检查 @src/login.ts 的逻辑」。','`/clear`：清空对话，开始新任务。','`/compact`：压缩对话历史，腾出上下文空间。','`/model`：切换模型。','**Esc**：打断 Claude 正在做的事。','**Esc 按两次**：回退到之前的某一步。','**Shift+Tab**：切换权限模式。','`!` 开头：直接执行一条终端命令。']],
+   ['tip','一个任务做完就 `/clear`，再开始下一个。上下文干净，Claude 更专注，也更省额度。']
+  ], quiz:{q:'对话太长、想保留要点但腾出空间，用哪个命令？', opts:['/clear','/compact','/init'], a:1, why:'/compact 会把历史压缩成摘要；/clear 是彻底清空。'}},
+  {id:'l17', title:'权限与安全', mins:4, blocks:[
+   ['p','Claude Code 改文件、跑命令之前，默认会先问你。按 Shift+Tab 可以在几种模式之间切换。'],
+   ['ul',['**默认模式**：改文件、跑命令都先问你。','**自动接受编辑**：改文件不再问，跑命令仍然要你确认。','**计划模式**：只读不改，先给你方案，你同意后再动手。']],
+   ['p','用 `/permissions` 可以把常用的安全命令设成「总是允许」，减少弹窗。'],
+   ['tip','不熟悉的任务先用计划模式。项目用 git 管理，随时可以回退。']
+  ], quiz:{q:'想先看 Claude 的方案、确认后再让它改代码，用哪种模式？', opts:['自动接受编辑','计划模式','默认模式'], a:1, why:'计划模式下 Claude 只分析、不修改，适合大改动之前先对齐思路。'}},
+  {id:'l18', title:'Skills、MCP 与 Hooks', mins:5, blocks:[
+   ['p','这几样东西让 Claude Code 变成你团队专属的助手。'],
+   ['ul',['**Skills**：一个文件夹装着说明和脚本，教 Claude 完成特定任务，比如按公司模板写发布说明。用到时自动加载。','**MCP**：连接外部工具和数据，比如数据库、GitHub、设计稿。','**Hooks**：在固定时机自动执行的命令，比如每次改完文件自动格式化。','**子代理（Subagents）**：专做某类任务的助手，比如代码审查员。','**插件（Plugins）**：把以上几样打包，一键安装、分享给团队。']],
+   ['code','bash','# 添加一个远程 MCP 服务\nclaude mcp add --transport http <名字> <服务地址>\n\n# 查看已连接的 MCP\nclaude mcp list']
+  ], quiz:{q:'想让每次改完代码自动运行格式化工具，该用？', opts:['Skills','Hooks','MCP'], a:1, why:'Hooks 在固定事件发生时自动执行命令，适合格式化、检查这类每次都要做的事。'}}
+ ]},
+ {id:'m5', name:'开发者 API', path:'开发者', lessons:[
+  {id:'l19', title:'第一个 API 请求', mins:5, blocks:[
+   ['ol',['在 Claude 开发者平台（platform.claude.com）注册并创建 API Key。','把 Key 设成环境变量 `ANTHROPIC_API_KEY`。','安装官方 SDK：`pip install anthropic`。']],
+   ['code','python','import anthropic\n\nclient = anthropic.Anthropic()  # 自动读取 ANTHROPIC_API_KEY\n\nmessage = client.messages.create(\n    model="claude-sonnet-5-5",\n    max_tokens=1024,\n    messages=[{"role": "user", "content": "用一句话解释什么是 API"}],\n)\nprint(message.content[0].text)'],
+   ['tip','API Key 不要写进代码，更不要传到 GitHub。泄露后立刻在平台上作废。']
+  ], quiz:{q:'API Key 最安全的存放方式是？', opts:['直接写在代码里','放在环境变量里','发到群里备份'], a:1, why:'环境变量不会随代码提交，泄露风险最低。'}},
+  {id:'l20', title:'系统提示词与多轮对话', mins:4, blocks:[
+   ['p','`system` 参数用来设定角色和规则，`messages` 是对话记录，用户和助手轮流出现。'],
+   ['code','python','message = client.messages.create(\n    model="claude-sonnet-5-5",\n    max_tokens=1024,\n    system="你是一名耐心的英语老师，回答简短，并纠正学生的语法错误。",\n    messages=[\n        {"role": "user", "content": "I goes to school yesterday."},\n        {"role": "assistant", "content": "应该是 I went to school yesterday。"},\n        {"role": "user", "content": "为什么用 went？"},\n    ],\n)'],
+   ['tip','API 不会自动记住对话。每次请求都要把之前的消息一起发过去。']
+  ], quiz:{q:'调用 API 做多轮对话，需要怎么处理历史消息？', opts:['服务器会自动记住','每次请求都带上历史消息','只发最新一条就行'], a:1, why:'API 是无状态的，上下文完全由你发送的 messages 决定。'}},
+  {id:'l21', title:'工具调用', mins:5, blocks:[
+   ['p','告诉 Claude 你有哪些函数，包括名字、用途和参数格式。它需要时会返回一个调用请求，你执行函数，再把结果发回去，它据此给出最终回答。'],
+   ['code','python','tools = [{\n    "name": "get_weather",\n    "description": "查询某个城市当前的天气",\n    "input_schema": {\n        "type": "object",\n        "properties": {"city": {"type": "string", "description": "城市名"}},\n        "required": ["city"],\n    },\n}]\n\nmessage = client.messages.create(\n    model="claude-sonnet-5-5",\n    max_tokens=1024,\n    tools=tools,\n    messages=[{"role": "user", "content": "北京现在冷吗？"}],\n)\n# message.stop_reason == "tool_use" 时，执行函数并把结果发回'],
+   ['ol',['你发送问题和工具定义。','Claude 返回要调用的工具和参数。','你的代码执行函数，把结果作为 tool_result 发回。','Claude 根据结果回答用户。']],
+   ['tip','`description` 写得越清楚，Claude 越知道什么时候该用这个工具。']
+  ], quiz:{q:'工具调用中，真正执行函数的是谁？', opts:['Claude','你的代码','Anthropic 的服务器'], a:1, why:'Claude 只决定调用什么、传什么参数，执行和返回结果都在你这边。'}},
+  {id:'l22', title:'省钱又提速', mins:4, blocks:[
+   ['ul',['**选对模型**：分类、提取、简单改写用 Haiku，难题再用更强的模型。','**提示词缓存**：固定的长系统提示词和文档开启缓存，重复读取更便宜也更快。','**批处理**：不着急的大量任务用 Message Batches，价格大约减半。','**流式输出**：边生成边显示，用户感觉快很多。','**控制输出**：设好 `max_tokens`，要求简洁的格式。']],
+   ['tip','先用最强的模型把效果调好，再试着换成更便宜的模型，看效果能不能保住。']
+  ], quiz:{q:'每晚要处理上万条评论分类，不要求实时，最省钱的做法是？', opts:['用最强模型逐条实时调用','用 Haiku 加批处理','开扩展思考'], a:1, why:'简单任务用轻量模型，不急的大批量任务走批处理，成本最低。'}}
+ ]}
+];
+
+const PATHS = [
+ {name:'新手入门', desc:'认识 Claude，学会好好提问', mods:['m1','m2']},
+ {name:'效率进阶', desc:'项目、作品、文件与联网', mods:['m3']},
+ {name:'开发者', desc:'Claude Code 与 API', mods:['m4','m5']}
+];
+
+const TIPS = [
+ '说「要做什么」比说「不要做什么」更有效。',
+ '让 Claude 先问你几个问题再动手：「开始前，先问我 3 个你需要知道的问题。」',
+ '把好用的提示词存进项目说明，下次不用重写。',
+ '想要表格就直接说「用表格输出」，想要清单就说「列成清单」。',
+ '对答案有疑问，让它「给出依据，标明哪些是推测」。',
+ '同一件事让它写三个不同风格的版本，挑一个再精修。',
+ '截图比描述更准确，报错、界面问题直接截图发过去。',
+ '长文档放前面，问题放最后。',
+ '在 Claude Code 里，一个任务结束就 /clear。',
+ '让它扮演挑剔的审稿人：「指出这篇文章最弱的三个地方。」',
+ '写给谁看决定了怎么写，记得告诉 Claude 读者是谁。',
+ '复杂任务拆成几步，每步确认后再往下走。'
+];
+
+const PROMPTS = [
+ {id:'p1', cat:'工作', title:'周报生成', desc:'把零散记录整理成结构清晰的周报', tpl:'请把我这周的工作记录整理成一份周报。\n\n我的岗位：{岗位}\n本周记录：\n{本周做的事}\n\n要求：分为「本周完成」「数据与成果」「问题与风险」「下周计划」四部分；每条一句话，突出结果和数字；语气专业简洁。'},
+ {id:'p2', cat:'工作', title:'邮件润色', desc:'让邮件得体、清楚、不啰嗦', tpl:'请帮我润色下面这封邮件。\n\n收件人：{收件人身份}\n目的：{这封邮件想达成什么}\n原文：\n{邮件草稿}\n\n要求：语气礼貌但直接，删掉多余的客套，关键信息放在前两句。给出修改后的版本，再用三条说明你改了什么。'},
+ {id:'p3', cat:'工作', title:'会议纪要', desc:'从杂乱记录中提炼决策和待办', tpl:'下面是一场会议的原始记录，请整理成会议纪要。\n\n会议主题：{会议主题}\n原始记录：\n{会议记录或转写文字}\n\n输出格式：\n1. 一句话结论\n2. 关键决策\n3. 待办事项表格（事项 / 负责人 / 截止时间）\n4. 未解决的问题'},
+ {id:'p4', cat:'工作', title:'方案对比决策', desc:'多个选项时理清利弊', tpl:'我需要在以下选项中做决定：{选项}\n\n背景：{背景和限制条件}\n我最看重：{最在意的因素}\n\n请先列出评估维度，再逐项比较各选项，用表格呈现。最后给出你的推荐、理由，以及这个推荐在什么情况下会不成立。'},
+ {id:'p5', cat:'学习', title:'费曼学习法', desc:'用大白话搞懂一个新概念', tpl:'我想真正理解「{概念}」。我的基础是：{你目前的了解程度}。\n\n请：\n1. 用一个生活中的比喻解释它\n2. 再用准确的语言解释一遍\n3. 举一个具体例子\n4. 列出初学者最常见的两个误解\n5. 最后出 3 道小题考考我，先别给答案'},
+ {id:'p6', cat:'学习', title:'论文速读', desc:'快速抓住一篇论文的要点', tpl:'请帮我速读这篇论文（已上传）。我的背景：{你的专业背景}。\n\n请回答：\n1. 它想解决什么问题，为什么重要\n2. 用了什么方法\n3. 最关键的发现和数据\n4. 局限性\n5. 对{你关心的方向}有什么启发'},
+ {id:'p7', cat:'学习', title:'模拟面试', desc:'让 Claude 当面试官陪你练', tpl:'请你扮演{公司类型}的{岗位}面试官，对我进行一场模拟面试。\n\n我的简历要点：\n{简历要点}\n\n规则：每次只问一个问题，等我回答后先点评（优点、不足、更好的说法），再问下一个。一共 6 个问题，由浅入深。现在开始第一个问题。'},
+ {id:'p8', cat:'写作', title:'小红书文案', desc:'有网感的种草笔记', tpl:'请为「{产品或主题}」写一篇小红书笔记。\n\n目标读者：{目标人群}\n核心卖点：{卖点}\n\n要求：标题给 5 个备选，带数字或反差；正文 300 字左右，第一人称真实体验口吻，分段短，适当用符号分隔；结尾加 5 个相关话题标签。'},
+ {id:'p9', cat:'写作', title:'文章挑刺', desc:'像严格的编辑一样审稿', tpl:'请你作为一位严格的编辑审阅下面的文章。文章写给{目标读者}看，目的是{文章目的}。\n\n{文章内容}\n\n请指出：最弱的三个地方并说明原因；逻辑跳跃或论据不足的段落；可以删掉的句子。最后给出修改后的开头一段。'},
+ {id:'p10', cat:'写作', title:'换种说法', desc:'同一内容改写成不同语气', tpl:'请把下面这段话改写成三个版本：\n① {语气一，如：正式书面}\n② {语气二，如：轻松口语}\n③ {语气三，如：一句话精简}\n\n原文：\n{原文}'},
+ {id:'p11', cat:'编程', title:'代码审查', desc:'找 bug、找隐患、给改进', tpl:'请审查下面的 {语言} 代码。它的作用是：{代码用途}。\n\n{代码}\n\n请按严重程度列出：可能的 bug、安全隐患、性能问题、可读性问题。每条说明出问题的具体场景，并给出修改后的代码。'},
+ {id:'p12', cat:'编程', title:'写 SQL', desc:'用中文描述需求，生成查询', tpl:'数据库是 {数据库类型}，相关表结构如下：\n{表结构}\n\n需求：{用中文描述你想查什么}\n\n请写出 SQL，加上中文注释，并说明有没有需要注意的性能问题或边界情况。'},
+ {id:'p13', cat:'编程', title:'解释报错', desc:'看懂错误信息并修好', tpl:'我在 {环境或框架} 里遇到了下面的报错：\n\n{报错信息}\n\n相关代码：\n{相关代码}\n\n请解释报错原因，给出最可能的修复方法；如果有多种可能，按概率从高到低列出，并告诉我怎么验证。'},
+ {id:'p14', cat:'生活', title:'旅行规划', desc:'按节奏和预算排行程', tpl:'帮我规划一次 {目的地} 的旅行。\n\n天数：{天数}\n人员：{同行人员}\n预算：{预算}\n偏好：{喜欢什么、不喜欢什么}\n\n请按天给出行程，标注每段交通方式和大致时间；每天不超过 3 个主要景点；推荐当地特色餐厅；最后列出出发前要准备的事项。'},
+ {id:'p15', cat:'生活', title:'一周食谱', desc:'省心又健康的家常菜安排', tpl:'请帮我安排一周的晚餐食谱。\n\n家庭人数：{人数}\n饮食要求：{忌口、减脂、孩子等}\n做饭时间：每顿不超过 {分钟数} 分钟\n\n用表格列出每天的菜名，再给一份合并后的采购清单，按蔬菜、肉蛋、调料分类。'},
+ {id:'p16', cat:'生活', title:'难开口的话', desc:'帮你想好怎么说', tpl:'我需要和{对方是谁}谈一件事：{要谈的事}。\n\n我的顾虑：{担心什么}\n我希望的结果：{期望结果}\n\n请帮我准备：开场怎么说；核心表达的三个要点；对方可能的反应和我的回应；需要避免的说法。'}
+];
+
+const CHEAT = [
+ {group:'Claude Code 斜杠命令', rows:[
+  ['/help','查看所有可用命令'],['/init','扫描项目，生成 CLAUDE.md'],['/clear','清空对话，开始新任务'],['/compact','把对话历史压缩成摘要，腾出空间'],['/context','查看上下文用了多少'],['/model','切换模型'],['/resume','恢复之前的对话'],['/rewind','回退到之前的某个节点'],['/memory','编辑 CLAUDE.md 记忆文件'],['/permissions','管理允许和禁止的操作'],['/mcp','查看和管理 MCP 连接'],['/agents','管理子代理'],['/hooks','配置自动执行的 Hooks'],['/config','打开设置'],['/doctor','检查安装是否正常'],['/login','登录或切换账号']
+ ]},
+ {group:'Claude Code 快捷键', rows:[
+  ['Esc','打断 Claude 当前的操作'],['Esc Esc','回退到之前的消息'],['Shift+Tab','切换权限模式（默认 / 自动接受编辑 / 计划）'],['@','引用文件或目录'],['!','直接执行一条终端命令'],['/','打开命令菜单'],['↑','翻看之前输入的内容'],['Shift+Enter','换行（不发送）'],['Ctrl+V','粘贴截图'],['Ctrl+C','取消输入；连按两次退出']
+ ]},
+ {group:'命令行用法', rows:[
+  ['claude','在当前目录启动交互模式'],['claude "任务描述"','带着任务直接启动'],['claude -p "问题"','只输出结果后退出，适合脚本'],['claude -c','继续最近一次对话'],['claude -r','从历史对话中选择并恢复'],['claude --model <模型>','指定模型启动'],['claude mcp add','添加 MCP 服务'],['claude update','更新到最新版本']
+ ]},
+ {group:'claude.ai 使用技巧', rows:[
+  ['编辑消息','修改自己发过的消息，重新生成回答'],['重新生成','对同一问题换一个回答'],['拖拽上传','把文件直接拖进输入框'],['项目','固定资料和说明，多个对话共享'],['风格','切换回答的风格，比如简洁或详细'],['扩展思考','复杂问题让 Claude 先推理再回答'],['联网搜索','获取最新信息并附带来源'],['研究','多轮检索，生成带引用的调研报告']
+ ]},
+ {group:'提示词口诀', rows:[
+  ['给背景','说清楚是什么事、为什么做'],['定任务','具体要什么产出'],['提要求','长度、语气、受众、重点'],['指格式','表格、清单、段落还是模板'],['给例子','用 1 到 3 个例子说明风格'],['先思考','复杂问题让它一步步分析'],['分材料','多份内容用标签隔开'],['勤迭代','具体指出问题，逐步收紧']
+ ]}
+];
+
+/* ========== 状态 ========== */
+const KEY = 'claude-xuetang-v1';
+const ALL = MODULES.flatMap((m,mi)=>m.lessons.map((l,li)=>({...l, mod:m, mi, li})));
+const byId = Object.fromEntries(ALL.map(l=>[l.id,l]));
+let S = {done:{}, fav:{}, quiz:{}, last:null};
+try{ const raw = localStorage.getItem(KEY); if(raw) S = Object.assign(S, JSON.parse(raw)); }catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+let route = {view:'home'};
+let promptCat = '全部';
+let cheatQ = '';
+let resetAsk = false;
+const vals = {};
+
+/* ========== 工具函数 ========== */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inl = s=>esc(s).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+const doneCount = ()=>ALL.filter(l=>S.done[l.id]).length;
+const modDone = m=>m.lessons.filter(l=>S.done[l.id]).length;
+const nextLesson = ()=> (S.last && !S.done[S.last] ? byId[S.last] : null) || ALL.find(l=>!S.done[l.id]) || null;
+
+const ICON = {
+ home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+ book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H20v15H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H20"/><path d="M8 7h8M8 11h6"/></svg>',
+ spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>',
+ bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m7 10 3 2-3 2M12 14h5"/></svg>',
+ user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+ chev:'<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>',
+ left:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 6-6 6 6 6"/></svg>',
+ arrow:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+ star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
+ starO:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
+ search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>'
+};
+const TABS = [['home','首页','home'],['courses','课程','book'],['prompts','提示词','spark'],['cheat','速查','bolt'],['me','我的','user']];
+const tabOf = v=>({lesson:'courses', prompt:'prompts'}[v] || v);
+
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('on'),1600); }
+function copy(text){
+  const ok=()=>toast('已复制');
+  const fallback=()=>{ const ta=document.createElement('textarea'); ta.value=text; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); let done=false; try{ done=document.execCommand('copy'); }catch(e){} ta.remove(); toast(done?'已复制':'复制失败，请长按文字手动复制'); };
+  try{ navigator.clipboard.writeText(text).then(ok, fallback); }catch(e){ fallback(); }
+}
+function go(view, extra={}){ route={view, ...extra}; render(); window.scrollTo(0,0); }
+
+/* ========== 视图 ========== */
+function ring(pct){
+  const r=44, c=2*Math.PI*r;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--sunk)" stroke-width="9"/><circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--signal)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-pct)}"/></svg>`;
+}
+
+function vHome(){
+  const d=doneCount(), n=ALL.length, nx=nextLesson();
+  const day=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,0))/864e5);
+  const tip=TIPS[day%TIPS.length];
+  const cont = nx ? `<button class="continue" data-lesson="${nx.id}">
+      <div class="grow"><p>${d? '继续学习':'从这里开始'} · ${esc(nx.mod.name)} 第 ${nx.li+1} 课</p><h3>${esc(nx.title)}</h3></div>
+      <span class="go">${ICON.arrow}</span></button>`
+    : `<div class="card"><h3 style="font-size:19px">全部 ${n} 课都学完了</h3><p class="muted small" style="margin-top:4px">去「提示词」页挑几个模板，在真实工作里用起来。</p></div>`;
+  const paths = PATHS.map(p=>{
+    const ls=MODULES.filter(m=>p.mods.includes(m.id)).flatMap(m=>m.lessons);
+    const k=ls.filter(l=>S.done[l.id]).length;
+    return `<button class="path" data-path="${p.mods[0]}"><b>${p.name}</b><span>${p.desc}</span><span style="font-variant-numeric:tabular-nums">${k} / ${ls.length} 课</span><div class="bar"><i style="width:${ls.length?k/ls.length*100:0}%"></i></div></button>`;
+  }).join('');
+  return `
+  <section class="hero">
+    <div><h1>每天十分钟，<br>把 Claude 用明白</h1><p>${n} 节短课，从第一次对话到写代码、调 API。每课配一道小题。</p></div>
+    <div class="ring">${ring(n?d/n:0)}<div class="ring-num"><div><b>${d}</b><br><span>/ ${n} 课</span></div></div></div>
+  </section>
+  <div class="section" style="margin-top:20px">${cont}</div>
+  <section class="section"><p class="eyebrow">学习路线</p><div class="paths">${paths}</div></section>
+  <section class="section"><div class="tip-card"><p class="eyebrow">今日技巧</p><p style="margin-top:4px">${esc(tip)}</p></div></section>
+  <section class="section"><div class="row"><p class="eyebrow grow">热门提示词</p><button class="btn ghost sm" data-go="prompts">全部模板</button></div>
+    <div class="pr-list">${PROMPTS.filter(p=>['p1','p5','p8','p11'].includes(p.id)).map(prCard).join('')}</div></section>`;
+}
+
+function vCourses(){
+  return `<div class="stack"><h1 style="font-size:28px">课程</h1><p class="muted">${MODULES.length} 个模块，${ALL.length} 节课。按顺序学最顺，也可以直接跳到想看的那课。</p></div>` +
+  MODULES.map((m,mi)=>`<section class="section mod" id="${m.id}">
+    <div class="mod-head"><div><p class="eyebrow">模块 ${mi+1} · ${m.path}</p><h2>${esc(m.name)}</h2></div><span>${modDone(m)} / ${m.lessons.length}</span></div>
+    <div class="lessons">${m.lessons.map((l,li)=>`<button class="lesson-row${S.done[l.id]?' done':''}" data-lesson="${l.id}">
+      <span class="num">${S.done[l.id]?'✓':li+1}</span>
+      <span class="grow"><span class="t">${esc(l.title)}</span><br><span class="m">约 ${l.mins} 分钟${S.quiz[l.id]!=null?(S.quiz[l.id]===l.quiz.a?' · 小测答对':' · 小测答错'):''}</span></span>
+      ${ICON.chev}</button>`).join('')}</div></section>`).join('');
+}
+
+function block(b){
+  const [t]=b;
+  if(t==='p') return `<p>${inl(b[1])}</p>`;
+  if(t==='h') return `<h3>${esc(b[1])}</h3>`;
+  if(t==='ul'||t==='ol') return `<${t}>${b[1].map(x=>`<li>${inl(x)}</li>`).join('')}</${t}>`;
+  if(t==='tip') return `<div class="callout"><b>提示</b>${inl(b[1])}</div>`;
+  if(t==='cmp') return `<div class="cmp">
+     <div class="bubble bad"><span class="lab">模糊的问法</span><br>${esc(b[1])}</div>
+     <div class="bubble good"><span class="lab">清楚的问法</span><br>${esc(b[2])}</div>
+     <p class="cmp-note">${inl(b[3])}</p></div>`;
+  if(t==='try') return `<div class="try"><div class="try-head">试一试，复制到 Claude 里用<button class="btn sm" data-copy="${esc(b[1])}">复制</button></div><div class="try-body">${esc(b[1])}</div></div>`;
+  if(t==='code') return `<div class="code"><div class="code-head"><span>${esc(b[1])}</span><button class="btn ghost sm" data-copy="${esc(b[2])}">复制</button></div><pre><code style="background:none;border:0;padding:0;color:inherit;font-size:inherit">${esc(b[2])}</code></pre></div>`;
+  return '';
+}
+
+function vLesson(){
+  const l=byId[route.id]; if(!l) return vCourses();
+  S.last=l.id; save();
+  const idx=ALL.indexOf(l), prev=ALL[idx-1], next=ALL[idx+1];
+  const ans=S.quiz[l.id];
+  const q=l.quiz;
+  const opts=q.opts.map((o,i)=>{
+    let cls=''; if(ans!=null){ if(i===q.a) cls=' right'; else if(i===ans) cls=' wrong'; }
+    return `<button class="opt${cls}" data-ans="${i}" ${ans!=null?'disabled':''}><span class="k">${'ABCD'[i]}</span><span class="grow">${esc(o)}</span></button>`;
+  }).join('');
+  return `
+  <button class="back" data-go="courses">${ICON.left} 全部课程</button>
+  <header class="lesson-head">
+    <div class="row"><p class="eyebrow grow">模块 ${l.mi+1} · 第 ${l.li+1} 课 · 约 ${l.mins} 分钟</p>
+      <button class="star" data-fav="${l.id}" aria-pressed="${!!S.fav[l.id]}" aria-label="收藏这一课">${S.fav[l.id]?ICON.star:ICON.starO}</button></div>
+    <h1>${esc(l.title)}</h1>
+  </header>
+  <article class="prose">${l.blocks.map(block).join('')}</article>
+  <section class="quiz card">
+    <p class="eyebrow">小测</p>
+    <p class="q">${esc(q.q)}</p>
+    ${opts}
+    ${ans!=null?`<p class="why"><strong>${ans===q.a?'答对了。':'正确答案是 '+'ABCD'[q.a]+'。'}</strong>${esc(q.why)}</p>${ans!==q.a?'<button class="btn ghost sm" data-retry style="align-self:flex-start">再答一次</button>':''}`:''}
+  </section>
+  <div class="lesson-foot">
+    ${prev?`<button class="btn ghost" data-lesson="${prev.id}">${ICON.left} 上一课</button>`:''}
+    <button class="btn" data-done="${l.id}">${S.done[l.id]?(next?'下一课':'回到课程'):(next?'学完了，下一课':'学完了')}</button>
+  </div>`;
+}
+
+function prCard(p){
+  return `<button class="pr" data-prompt="${p.id}"><span class="cat">${p.cat}</span><b>${esc(p.title)}</b><span>${esc(p.desc)}</span></button>`;
+}
+function vPrompts(){
+  const cats=['全部','收藏',...new Set(PROMPTS.map(p=>p.cat))];
+  const list=PROMPTS.filter(p=>promptCat==='全部'||(promptCat==='收藏'?S.fav[p.id]:p.cat===promptCat));
+  return `<div class="stack"><h1 style="font-size:28px">提示词模板</h1><p class="muted">选一个模板，填上你的内容，一键复制到 Claude。</p>
+    <div class="chips" role="group" aria-label="分类">${cats.map(c=>`<button class="chip" data-cat="${c}" aria-pressed="${c===promptCat}">${c}</button>`).join('')}</div></div>
+    <div class="pr-list" style="margin-top:16px">${list.map(prCard).join('') || '<p class="empty" style="grid-column:1/-1">还没有收藏的模板。打开任意模板，点右上角的星标就能收藏。</p>'}</div>`;
+}
+function varsOf(tpl){ return [...new Set([...tpl.matchAll(/\{([^}]+)\}/g)].map(m=>m[1]))]; }
+function fill(p, html){
+  const v=vals[p.id]||{};
+  return p.tpl.split(/(\{[^}]+\})/g).map(part=>{
+    const m=part.match(/^\{([^}]+)\}$/);
+    if(!m) return html?esc(part):part;
+    const val=(v[m[1]]||'').trim();
+    if(val) return html?esc(val):val;
+    return html?`<mark>${esc(m[1])}</mark>`:`【${m[1]}】`;
+  }).join('');
+}
+function vPrompt(){
+  const p=PROMPTS.find(x=>x.id===route.id); if(!p) return vPrompts();
+  const vs=varsOf(p.tpl); vals[p.id]=vals[p.id]||{};
+  const long=k=>/记录|原文|内容|代码|草稿|报错|表结构|简历|做的事|文字/.test(k);
+  return `<button class="back" data-go="prompts">${ICON.left} 全部模板</button>
+  <header class="lesson-head"><div class="row"><p class="eyebrow grow">${p.cat}</p>
+    <button class="star" data-fav="${p.id}" aria-pressed="${!!S.fav[p.id]}" aria-label="收藏这个模板">${S.fav[p.id]?ICON.star:ICON.starO}</button></div>
+    <h1>${esc(p.title)}</h1><p class="muted">${esc(p.desc)}</p></header>
+  <section class="section"><p class="eyebrow">填写内容</p>
+    ${vs.map((k,i)=>`<div class="field"><label for="v-${p.id}-${i}">${esc(k)}</label>${long(k)
+      ?`<textarea id="v-${p.id}-${i}" data-var="${esc(k)}" placeholder="在这里粘贴或输入">${esc(vals[p.id][k]||'')}</textarea>`
+      :`<input id="v-${p.id}-${i}" data-var="${esc(k)}" value="${esc(vals[p.id][k]||'')}" placeholder="例如……">`}</div>`).join('')}
+  </section>
+  <section class="section"><div class="row"><p class="eyebrow grow">预览</p><button class="btn sm" data-copyprompt="${p.id}">复制提示词</button></div>
+    <div class="preview" id="pv">${fill(p,true)}</div>
+    <p class="muted small">没填的部分会以【】标出，复制后也可以在 Claude 里再补。</p></section>`;
+}
+
+function vCheat(){
+  const q=cheatQ.trim().toLowerCase();
+  const groups=CHEAT.map(g=>({...g, rows:g.rows.filter(r=>!q||(r[0]+r[1]+g.group).toLowerCase().includes(q))})).filter(g=>g.rows.length);
+  return `<div class="stack"><h1 style="font-size:28px">速查</h1>
+    <div class="search-wrap">${ICON.search}<input class="search" id="cheat-q" type="search" placeholder="搜命令或功能，比如「压缩」「模型」" value="${esc(cheatQ)}" aria-label="搜索速查表"></div></div>
+    <div id="cheat-body">${cheatBody(groups)}</div>`;
+}
+function cheatBody(groups){
+  if(!groups.length) return `<p class="empty">没找到相关内容，换个词试试。</p>`;
+  return groups.map(g=>`<section class="section"><p class="eyebrow">${esc(g.group)}</p><div class="cheat">${g.rows.map(r=>`<div class="cheat-row"><span class="cmd">${esc(r[0])}</span><span>${esc(r[1])}</span></div>`).join('')}</div></section>`).join('');
+}
+
+function vMe(){
+  const d=doneCount(), n=ALL.length;
+  const answered=ALL.filter(l=>S.quiz[l.id]!=null), right=answered.filter(l=>S.quiz[l.id]===l.quiz.a).length;
+  const favL=ALL.filter(l=>S.fav[l.id]), favP=PROMPTS.filter(p=>S.fav[p.id]);
+  return `<h1 style="font-size:28px">我的学习</h1>
+  <div class="stats" style="margin-top:16px">
+    <div class="stat"><b>${d}</b><span>已学完 / ${n}</span></div>
+    <div class="stat"><b>${answered.length?Math.round(right/answered.length*100)+'%':'—'}</b><span>小测正确率</span></div>
+    <div class="stat"><b>${favL.length+favP.length}</b><span>收藏</span></div>
+  </div>
+  <section class="section"><p class="eyebrow">各模块进度</p><div class="card" style="padding-block:6px">
+    ${MODULES.map(m=>`<div class="mod-prog"><span>${esc(m.name)}</span><div class="bar" style="margin:0"><i style="width:${modDone(m)/m.lessons.length*100}%"></i></div><em>${modDone(m)}/${m.lessons.length}</em></div>`).join('')}
+  </div></section>
+  <section class="section"><p class="eyebrow">收藏的课</p>
+    ${favL.length?`<div class="lessons">${favL.map(l=>`<button class="lesson-row${S.done[l.id]?' done':''}" data-lesson="${l.id}"><span class="num">${S.done[l.id]?'✓':l.li+1}</span><span class="grow"><span class="t">${esc(l.title)}</span><br><span class="m">${esc(l.mod.name)}</span></span>${ICON.chev}</button>`).join('')}</div>`:'<p class="muted small">在课文页点星标即可收藏。</p>'}
+  </section>
+  <section class="section"><p class="eyebrow">收藏的模板</p>
+    ${favP.length?`<div class="pr-list">${favP.map(prCard).join('')}</div>`:'<p class="muted small">在模板页点星标即可收藏。</p>'}
+  </section>
+  <section class="section"><p class="eyebrow">数据</p>
+    <p class="muted small">学习进度只保存在这台设备的浏览器里，换设备或清除浏览器数据后会重新开始。</p>
+    ${resetAsk?`<div class="confirm"><span class="grow">清空全部进度、小测和收藏？这一步不能撤销。</span><button class="btn sm" style="background:var(--bad);color:var(--surface)" data-reset="yes">确认清空</button><button class="btn ghost sm" data-reset="no">取消</button></div>`
+      :`<button class="btn ghost sm" data-reset="ask" style="align-self:flex-start">清空学习记录</button>`}
+  </section>`;
+}
+
+/* ========== 渲染与事件 ========== */
+function render(){
+  const v=route.view;
+  const html = {home:vHome, courses:vCourses, lesson:vLesson, prompts:vPrompts, prompt:vPrompt, cheat:vCheat, me:vMe}[v]();
+  const el=$('#view'); el.innerHTML=html; el.classList.remove('view'); void el.offsetWidth; el.classList.add('view');
+  $('#tabs').innerHTML=TABS.map(([k,label,ic])=>`<button class="tab" data-go="${k}" ${tabOf(v)===k?'aria-current="page"':''}>${ICON[ic]}<span>${label}</span></button>`).join('');
+  $('#topPill').textContent=`已学 ${doneCount()} / ${ALL.length}`;
+  if(route.scrollTo){ const t=document.getElementById(route.scrollTo); if(t) setTimeout(()=>t.scrollIntoView({block:'start'}),0); delete route.scrollTo; }
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button'); if(!t) return;
+  const d=t.dataset;
+  if(t.id==='brand') return go('home');
+  if(d.go) return go(d.go);
+  if(d.lesson) return go('lesson',{id:d.lesson});
+  if(d.path){ route={view:'courses', scrollTo:d.path}; render(); return; }
+  if(d.prompt) return go('prompt',{id:d.prompt});
+  if(d.cat){ promptCat=d.cat; render(); return; }
+  if(d.copy!=null) return copy(d.copy);
+  if(d.copyprompt){ const p=PROMPTS.find(x=>x.id===d.copyprompt); return copy(fill(p,false)); }
+  if(d.fav){ S.fav[d.fav]=!S.fav[d.fav]; if(!S.fav[d.fav]) delete S.fav[d.fav]; save(); toast(S.fav[d.fav]?'已收藏':'已取消收藏'); const y=scrollY; render(); scrollTo(0,y); return; }
+  if(d.ans!=null){ S.quiz[route.id]=+d.ans; save(); const y=scrollY; render(); scrollTo(0,y); return; }
+  if(d.retry!=null){ delete S.quiz[route.id]; save(); const y=scrollY; render(); scrollTo(0,y); return; }
+  if(d.done){
+    const first=!S.done[d.done]; S.done[d.done]=true; save();
+    const idx=ALL.findIndex(l=>l.id===d.done), next=ALL[idx+1];
+    if(first) toast(next?'已完成，继续加油':'全部课程学完了');
+    return next?go('lesson',{id:next.id}):go('courses');
+  }
+  if(d.reset==='ask'){ resetAsk=true; render(); return; }
+  if(d.reset==='no'){ resetAsk=false; render(); return; }
+  if(d.reset==='yes'){ S={done:{},fav:{},quiz:{},last:null}; save(); resetAsk=false; render(); toast('已清空'); return; }
+});
+
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='cheat-q'){
+    cheatQ=t.value;
+    const q=cheatQ.trim().toLowerCase();
+    const groups=CHEAT.map(g=>({...g, rows:g.rows.filter(r=>!q||(r[0]+r[1]+g.group).toLowerCase().includes(q))})).filter(g=>g.rows.length);
+    $('#cheat-body').innerHTML=cheatBody(groups); return;
+  }
+  if(t.dataset.var!=null && route.view==='prompt'){
+    const p=PROMPTS.find(x=>x.id===route.id);
+    vals[p.id][t.dataset.var]=t.value;
+    $('#pv').innerHTML=fill(p,true);
+  }
+});
+
+(function init(){
+  const h=(location.hash||'').slice(1);
+  if(['courses','prompts','cheat','me'].includes(h)) route={view:h};
+  else if(byId[h]) route={view:'lesson', id:h};
+  render();
+})();
+</script>

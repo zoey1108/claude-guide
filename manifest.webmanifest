@@ -1,0 +1,11 @@
+{
+  "name": "Claude 学堂",
+  "short_name": "Claude 学堂",
+  "description": "每天十分钟，把 Claude 用明白",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F1F4F2",
+  "theme_color": "#1D6A5B",
+  "lang": "zh-CN",
+  "icons": [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}]
+}
