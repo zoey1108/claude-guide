@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
   echo '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
   echo '<meta name="theme-color" content="#1D6A5B"><meta name="apple-mobile-web-app-capable" content="yes">'
   echo '<meta name="apple-mobile-web-app-title" content="Claude 学堂"><link rel="manifest" href="manifest.webmanifest">'
-  echo '<link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon.svg">'
+  echo '<link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="apple-touch-icon.png">'
   echo '<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>'
   echo '</head><body>'
   cat app.html
