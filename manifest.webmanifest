@@ -1,0 +1,37 @@
+{
+  "name": "提问学堂",
+  "short_name": "提问学堂",
+  "description": "每天十分钟，把 Claude 用明白",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F1F4F2",
+  "theme_color": "#1D6A5B",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "scope": "./"
+}
